@@ -59,7 +59,7 @@ interface Payboxable {
   const MODE_PERSIST_AFTER_REDIRECT  = 2;
 
 
-	function handleIPN($logguer);
+	function handleIPN($logguer, $vars);
 
   function getUniqId();
   function getEmail();
@@ -67,7 +67,7 @@ interface Payboxable {
   function getCurrency();
   function isPayment3X();
 
-  function onClientSuccess();
+  function onClientSuccess($args = NULL);
   function onClientError();
 	function onClientConfirmation();
 }

@@ -32,17 +32,14 @@ require_once(__DIR__ . '/controller-redirect.php');
 
 load_plugin_textdomain( 'wp-paybox', false, __DIR__ );
 
-add_action( 'rest_api_init', function () {
-  register_rest_route('wp-paybox' , '/ipn', ['methods' => 'GET', 'callback' => ['WP_Paybox_IPN', 'init']]);
-});
+/*add_action( 'rest_api_init',
+            function () {
+              $ipn = new WP_Paybox_IPN(WP_Paybox::opt('CHECKIP'), WP_Paybox::PBX_RETOUR, WP_Paybox::SOURCE_IPS);
+              register_rest_route('wp-paybox/v1' , '/ipn', ['methods' => 'GET', 'callback' => [$ipn, 'init']]);
+            },
+            5 // easily overridable
+);*/
 
 if (is_admin()) {
   $my_settings_page = new WP_Paybox_Settings();
-}
-
-function mylog($source = 'IPN', $log, $syslog_prio = NULL) {
-  static $fp;
-  syslog($syslog_prio ? : LOG_INFO, "paybox/{$source}: " . $log);
-  if(! $fp) $fp = fopen(__DIR__ . '/log.txt','a+');
-  fputs($fp, date("Y/m/d H:i:: ") . "{$source}: " . $log . PHP_EOL);
 }

@@ -8,6 +8,15 @@
  * (at your option) any later version.
  */
 
+/*
+  In order to use this class, just:
+  - extend it
+  - implements setReturnURLS()
+  - optionnally override opt()
+  - optionnally implements isTestMode()
+  - use your extended class
+*/
+
 class WP_Paybox {
 
   const PBX_URL_TEST = 'https://preprod-tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi';
@@ -137,6 +146,17 @@ class WP_Paybox {
     delete_option('wp_paybox_HMAC_settings');
   }
 
+  public static function isTestMode() {
+    return static::opt('testmode') == 1;
+  }
+
+  public static function getPayboxURL() {
+    if(static::isTestMode()) {
+      return self::PBX_URL_TEST;
+    } else {
+      return self::PBX_URL;
+    }
+  }
   public static function opt($opt) {
     // wp_paybox_HMAC_settings is it own settings (unserialized) so that prod/preprod/mysqldump
     // are easier to manage
@@ -144,14 +164,16 @@ class WP_Paybox {
     return get_option('wp_paybox_settings')[$opt];
   }
 
+
+  // No needs to overring these
   public static function preparePayboxCommonData(&$params) {
-    $params += array('PBX_SITE' => self::opt('site'),
-                     'PBX_RANG' => self::opt('rang'),
-                     'PBX_IDENTIFIANT' => self::opt('ident'),
+    $params += array('PBX_SITE' => static::opt('site'),
+                     'PBX_RANG' => static::opt('rang'),
+                     'PBX_IDENTIFIANT' => static::opt('ident'),
                      'PBX_RETOUR' => implode(';', self::PBX_RETOUR));
 
-    $PBX_TYPEPAIEMENT = self::opt('limit_payment');
-    $PBX_TYPECARTE = self::opt('limit_card');
+    $PBX_TYPEPAIEMENT = static::opt('limit_payment');
+    $PBX_TYPECARTE = static::opt('limit_card');
     if($PBX_TYPEPAIEMENT && in_array($PBX_TYPECARTE, self::TYPE_CARTE[$PBX_TYPEPAIEMENT])) {
       $params += array('PBX_TYPEPAIEMENT' => $PBX_TYPEPAIEMENT,
                        'PBX_TYPECARTE' => $PBX_TYPECARTE);
@@ -164,15 +186,15 @@ class WP_Paybox {
     $m1 = $m2 = intval($total / 3);
     $m3 = intval($total - $m1 - $m2);
     // PBX_TOTAL est remplacé par le montant de la 1ère échéance
-    $params = array_replace($params, ['PBX_DATE1'  => date('d/m/Y', time() + (self::opt('nbdays') * 3600 * 24)),
-                                      'PBX_DATE2'  => date('d/m/Y', time() + (self::opt('nbdays') * 3600 * 24 * 2)),
+    $params = array_replace($params, ['PBX_DATE1'  => date('d/m/Y', time() + (static::opt('nbdays') * 3600 * 24)),
+                                      'PBX_DATE2'  => date('d/m/Y', time() + (static::opt('nbdays') * 3600 * 24 * 2)),
                                       'PBX_TOTAL'  => $m1,
                                       'PBX_2MONT1' => $m2,
                                       'PBX_2MONT2' => $m3]);
   }
 
   public function preparePayboxData(Payboxable $c /* controller override */) {
-    if ($c->isPayment3X() && $c->getAmount() < floatval(self::opt('3dmin'))) {
+    if ($c->isPayment3X() && $c->getAmount() < floatval(static::opt('3dmin'))) {
       die(__("You can't pay in 3x for this amount")); // TODO: redirect
     }
 
@@ -191,7 +213,7 @@ class WP_Paybox {
                         // http://www1.paybox.com/espace-integrateur-documentation/la-solution-paybox-system/gestion-de-la-reponse/
                         // contrairement à PBX_EFFECTUE, PBX_REFUSE et PBX_ANNULE, PBX_REPONDRE_A est appelée par le robot de Paybox 
                         // et non un <meta refresh>, elle n'est donc pas encodée
-                        'PBX_REPONDRE_A' => get_rest_url('wp-paybox/v1/ipn')];
+                        'PBX_REPONDRE_A' => get_rest_url(NULL, 'wp-paybox/v1/ipn')];
 
     $this->setReturnURLS($PBX_base_param['PBX_EFFECTUE'], $PBX_base_param['PBX_REFUSE'], $PBX_base_param['PBX_ANNULE']);
 
@@ -200,24 +222,16 @@ class WP_Paybox {
       self::preparePaybox3xData($PBX_base_param, $PBX_TOTAL);
     }
 
-    if($c->getAmount() < floatval(self::opt('3dmin'))) {
+    if($c->getAmount() < floatval(static::opt('3dmin'))) {
       $PBX_base_param['PBX_3DS'] = 'N'; // default, if unset, is True
     }
     $params = $PBX_base_param + ['PBX_TIME' => date("c"), 'PBX_HASH' => 'SHA512'];
 
     $pbx_query = urldecode(http_build_query($params, NULL, "&", PHP_QUERY_RFC3986));
-    mylog("redir", "built query: $pbx_query");
-    $hmac = strtoupper(hash_hmac('sha512', $pbx_query, pack("H*", self::opt('hmac'))));
+
+    // $this->logger("redir", "built query: $pbx_query");
+    $hmac = strtoupper(hash_hmac('sha512', $pbx_query, pack("H*", static::opt('hmac'))));
 
     return [$params, $hmac];
-  }
-
-  public static function getPayboxURL() {
-    /* TODO: filter here to reuse another plugin's "test"-mode */
-    if(self::opt('testmode') == 1) {
-      return self::PBX_URL_TEST;
-    } else {
-      return self::PBX_URL;
-    }
   }
 }

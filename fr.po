@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wp-paybox\n"
-"POT-Creation-Date: 2016-12-18 19:53-0300\n"
-"PO-Revision-Date: 2016-12-18 19:53-0300\n"
+"POT-Creation-Date: 2017-03-05 18:34-0300\n"
+"PO-Revision-Date: 2017-03-05 18:34-0300\n"
 "Last-Translator: Raphaël Droz <raphael.droz@gmail.com>\n"
 "Language-Team: Raphaël Droz <raphael.droz+floss@gmail.com>\n"
 "Language: fr_FR\n"
@@ -13,99 +13,99 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-KeywordsList: __;_e;esc_html__\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: templates\n"
 
-#: class-admin-settings.php:17
+#: class-admin-settings.php:25
 msgid "Accept payments by Paybox"
 msgstr "Accepter les paiements via Paybox"
 
-#: class-admin-settings.php:73
+#: class-admin-settings.php:81
 msgid "Paybox site value"
 msgstr "Site paybox"
 
-#: class-admin-settings.php:79
+#: class-admin-settings.php:87
 msgid "Paybox rang value"
 msgstr "Rang paybox"
 
-#: class-admin-settings.php:85
+#: class-admin-settings.php:93
 msgid "Paybox ident value"
 msgstr "Site Paybox"
 
-#: class-admin-settings.php:91
+#: class-admin-settings.php:99
 msgid "Paybox hmac value"
 msgstr "Paybox HMAC"
 
-#: class-admin-settings.php:97
+#: class-admin-settings.php:105
 msgid "Should IPN endpoint check Paybox source IP?"
 msgstr "Vérification d'IP Paybox par l'IPN ?"
 
-#: class-admin-settings.php:98 class-admin-settings.php:104
-#: class-admin-settings.php:116
+#: class-admin-settings.php:106 class-admin-settings.php:112
+#: class-admin-settings.php:124
 msgid "Yes"
 msgstr "Oui"
 
-#: class-admin-settings.php:98 class-admin-settings.php:104
-#: class-admin-settings.php:116
+#: class-admin-settings.php:106 class-admin-settings.php:112
+#: class-admin-settings.php:124
 msgid "No"
 msgstr "Non"
 
-#: class-admin-settings.php:103
+#: class-admin-settings.php:111
 msgid "Test mode"
 msgstr "Mode de test"
 
-#: class-admin-settings.php:109
+#: class-admin-settings.php:117
 msgid "Minimum amount for 3D Secure"
 msgstr "Montant minimum pour la 3D Secure"
 
-#: class-admin-settings.php:115
+#: class-admin-settings.php:123
 msgid "Accept 3x payments"
 msgstr "Accepter les paiements en 3x"
 
-#: class-admin-settings.php:121
+#: class-admin-settings.php:129
 msgid "The minimum amount to activate the multiple payments"
 msgstr "Montant minimum permettant le paiement en 3x"
 
-#: class-admin-settings.php:127
+#: class-admin-settings.php:135
 msgid "Number of days between multiple payments"
 msgstr "Nombre de jour séparant les paiements multiples"
 
-#: class-admin-settings.php:133
+#: class-admin-settings.php:141
 msgid "Limit payment types"
 msgstr "Restriction sur le type de paiement"
 
-#: class-admin-settings.php:146
+#: class-admin-settings.php:154
 msgid "Restriction sur le type de carte"
 msgstr "Restriction sur le type de carte"
 
-#: class-admin-settings.php:148
+#: class-admin-settings.php:156
 msgid "Submit settings in order to select below card restrictions"
 msgstr ""
 "Validez tout d'abord la restriction sur le type de paiement avant de "
 "sélectionner une restriction sur le type de carte"
 
-#: class-admin-settings.php:149
+#: class-admin-settings.php:157
 msgid "/!\\ Not fully implemented yet!"
 msgstr "/!\\ Pas encore implémenté !"
 
-#: class-admin-settings.php:165
+#: class-admin-settings.php:173
 msgid "Paybox site required"
 msgstr "Site paybox requis"
 
-#: class-admin-settings.php:167
+#: class-admin-settings.php:175
 msgid "Paybox rang required"
 msgstr "Rang paybox requis"
 
-#: class-admin-settings.php:169
+#: class-admin-settings.php:177
 msgid "Paybox identifiant required"
 msgstr "Identifiant paybox requis"
 
-#: class-admin-settings.php:209
+#: class-admin-settings.php:217
 msgid "Please now select the TYPECARTE restriction"
 msgstr "Sélectionnez une restriction sur le type de carte bancaire"
 
-#: class-wp-paybox.php:147
+#: class-wp-paybox.php:198
 msgid "You can't pay in 3x for this amount"
 msgstr "Paiement en 3x impossible pour un tel montant"
 
@@ -127,14 +127,11 @@ msgstr "La dernière tentative de paiement a été refusée par Paybox."
 msgid "Make a new payment attempt"
 msgstr "Faire une nouvelle tentative de paiement"
 
-#: templates/payment.php:2 templates/payment.php:3 templates/payment.php:14
-#: templates/payment.php:17
-msgid "Pay by credit card"
-msgstr "Payer par carte bancaire"
+#~ msgid "Pay by credit card"
+#~ msgstr "Payer par carte bancaire"
 
-#: templates/payment.php:15
-msgid "Pay by credit card in multiple times (3x)"
-msgstr "Autoriser le paiement en 3x"
+#~ msgid "Pay by credit card in multiple times (3x)"
+#~ msgstr "Autoriser le paiement en 3x"
 
 #~ msgid "customer support"
 #~ msgstr "support client"

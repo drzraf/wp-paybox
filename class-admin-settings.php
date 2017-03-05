@@ -78,67 +78,67 @@ class WP_Paybox_Settings {
     );      
 
     add_settings_section('site',
-                         _e('Paybox site value', 'wp-paybox'),
+                         __('Paybox site value', 'wp-paybox'),
                          function() { printf('<input type="text" size="10" id="site" name="paybox[site]" value="%s" />', isset( $this->options['site'] ) ? esc_attr( $this->options['site']) : ''); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('rang',
-                         _e('Paybox rang value', 'wp-paybox'),
+                         __('Paybox rang value', 'wp-paybox'),
                          function() { printf('<input type="text" size="10" id="rang" name="paybox[rang]" value="%s" />', isset( $this->options['rang'] ) ? esc_attr( $this->options['rang']) : ''); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('ident',
-                         _e('Paybox ident value', 'wp-paybox'),
+                         __('Paybox ident value', 'wp-paybox'),
                          function() { printf('<input type="text" size="10" id="ident" name="paybox[ident]" value="%s" />', isset( $this->options['ident'] ) ? esc_attr( $this->options['ident']) : ''); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('hmac',
-                         _e('Paybox hmac value', 'wp-paybox'),
+                         __('Paybox hmac value', 'wp-paybox'),
                          function() { printf('<input type="text" size="33" id="hmac" name="paybox[hmac]" value="%s" />', isset( $this->options['hmac'] ) ? esc_attr( $this->options['hmac']) : ''); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('checkip',
-                         _e("Should IPN endpoint check Paybox source IP?", 'wp-paybox'),
-                         function() { printf('<input type="radio" name=""paybox[checkip]" value="1" %1$s /> %2$s <input type="radio" name=""paybox[checkip]" value="0" %2$s /> %4$s', $this->options['checkip'], _e('Yes'), ! $this->options['checkip'], _e('No')); },
+                         __("Should IPN endpoint check Paybox source IP?", 'wp-paybox'),
+                         function() { printf('<input type="radio" name=""paybox[checkip]" value="1" %1$s /> %2$s <input type="radio" name=""paybox[checkip]" value="0" %2$s /> %4$s', $this->options['checkip'], __('Yes'), ! $this->options['checkip'], __('No')); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('testmode',
-                         _e('Test mode', 'wp-paybox'),
-                         function() { printf('<input type="radio" name=""paybox[testmode]" value="1" %1$s /> %2$s <input type="radio" name=""paybox[testmode]" value="0" %2$s /> %4$s', $this->options['testmode'], _e('Yes'), ! $this->options['testmode'], _e('No')); },
+                         __('Test mode', 'wp-paybox'),
+                         function() { printf('<input type="radio" name=""paybox[testmode]" value="1" %1$s /> %2$s <input type="radio" name=""paybox[testmode]" value="0" %2$s /> %4$s', $this->options['testmode'], __('Yes'), ! $this->options['testmode'], __('No')); },
                          'my-setting-admin', 
                          'setting_section_id');
                          
     add_settings_section('3dmin',
-                         _e('Minimum amount for 3D Secure', 'wp-paybox'),
+                         __('Minimum amount for 3D Secure', 'wp-paybox'),
                          function() { printf('<input type="number" size="5" id="3dmin" name="paybox[3dmin]" value="%s" />', isset( $this->options['3dmin'] ) ? esc_attr( $this->options['3dmin']) : ''); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('accept3x',
-                         _e('Accept 3x payments', 'wp-paybox'),
-                         function() { printf('<input type="radio" name=""paybox[accept3x]" value="1" %1$s /> %2$s <input type="radio" name=""paybox[accept3x]" value="0" %2$s /> %4$s', $this->options['accept3x'], _e('Yes'), ! $this->options['accept3x'], _e('No')); },
+                         __('Accept 3x payments', 'wp-paybox'),
+                         function() { printf('<input type="radio" name=""paybox[accept3x]" value="1" %1$s /> %2$s <input type="radio" name=""paybox[accept3x]" value="0" %2$s /> %4$s', $this->options['accept3x'], __('Yes'), ! $this->options['accept3x'], __('No')); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('3xmin',
-                         _e('The minimum amount to activate the multiple payments', 'wp-paybox'),
+                         __('The minimum amount to activate the multiple payments', 'wp-paybox'),
                          function() { printf('<input type="number" size="5" id="3xmin" name="paybox[3xmin]" value="%s" />', isset( $this->options['3xmin'] ) ? esc_attr( $this->options['3xmin']) : ''); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('nbdays',
-                         _e('Number of days between multiple payments', 'wp-paybox'),
+                         __('Number of days between multiple payments', 'wp-paybox'),
                          function() { printf('<input type="number" size="5" id="nbdays" name="paybox[nbdays]" value="%s" />', isset( $this->options['nbdays'] ) ? esc_attr( $this->options['nbdays']) : ''); },
                          'my-setting-admin', 
                          'setting_section_id');
 
     add_settings_section('limit_payment',
-                         _e('Limit payment types', 'wp-paybox'),
+                         __('Limit payment types', 'wp-paybox'),
                          function() {
                             printf('<select name="paybox[limit_payment]">');
                             foreach(WP_Paybox::TYPE_PAIEMENT_POSSIBLE as $v) {
@@ -151,10 +151,10 @@ class WP_Paybox_Settings {
 
     if ($this->options['limit_payment']) {
       add_settings_section('limit_card',
-                           _e('Restriction sur le type de carte', 'wp-paybox'),
+                           __('Restriction sur le type de carte', 'wp-paybox'),
                            function() {
-                             _e('Submit settings in order to select below card restrictions', 'wp-paybox');
-                             _e('/!\ Not fully implemented yet!', 'wp-paybox');
+                             __('Submit settings in order to select below card restrictions', 'wp-paybox');
+                             __('/!\ Not fully implemented yet!', 'wp-paybox');
                              printf('<select name="paybox[limit_card]">');
                              foreach(WP_Paybox::TYPE_CARTE[$this->options['limit_payment']] as $v) {
                                printf('<option %s value="%s">%s</option>', ($v == $this->options['limit_card']) ? 'selected="selected"' : '', $v, $v == 'CB' ? 'CB (= Any card)' : $v);

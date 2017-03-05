@@ -9,6 +9,11 @@
  */
 
 class WP_Paybox_RedirectController {
+
+  public function logger($args) {
+    call_user_func_array(['WP_Paybox_IPN', 'default_logger'], func_get_args() + [1 => NULL, 2=>'redir']);
+  }
+
   public function init() {
     $this->ensureValidConfiguration();
     if($this::PERSIST_MODE === Payboxable::MODE_PERSIST_BEFORE_REDIRECT) {
@@ -24,54 +29,53 @@ class WP_Paybox_RedirectController {
     }
 
     list($params, $hmac) = $paybox->preparePayboxData($this);
-    self::makeHMACForm($params, $hmac);
+    self::makeHMACForm(WP_Paybox::getPayboxURL(), $params, $hmac);
     return;
 
 
   }
 
-  public static function makeHMACForm($params, $hmac) {
-    $PBX_PAYBOX     = WP_Paybox::getPayboxURL();
+  public static function makeHMACForm($PBX_PAYBOX, $params, $hmac) {
     $pbx_parameters = $params;
     $hmac           = $hmac;
-    load_template( __DIR__ . '/templates/hmac-payment.php' );
+    require( __DIR__ . '/templates/hmac-payment.php' );
   }
 
   public function create() {
     // we are going to output a redirection to Paybox
     // we want to communicate our entity ID as PBX_CMD
     // Thus, here, just before the redirection gets done we create a persistent entity
-    mylog("redir", sprintf("save(ref=%s, total=%.2f €)", $this->getUniqId(), $this->getAmount()));
+    $this->logger(sprintf("save(ref=%s, total=%.2f €)", $this->getUniqId(), $this->getAmount()));
   }
 
   public function update() {
     $id_order = Order::getOrderByCartId($cart->id);
     $uniqid = Order::getUniqReferenceOf($id_order);
     if (! $uniqid) {
-      mylog("redir", "can't find a reference for id_cart={$cart->id} => id_order=$id_order. Exit.", LOG_ERR);
+      $this->logger("can't find a reference for id_cart={$cart->id} => id_order=$id_order. Exit.", LOG_ERR);
       return displayError($paybox->l("missing order for this cart", 'redirect'));
     }
 
     $order = new Order($id_order);
     if($order->total_paid_real > 0) { // TODO total_paid_real != total_paid ?
-      mylog("redir", "Existing order found: n°$id_order - $uniqid for cart {$cart->id}. But total_paid_real = {$order->total_paid_real} > 0. Exit", LOG_ERR);
+      $this->logger("Existing order found: n°$id_order - $uniqid for cart {$cart->id}. But total_paid_real = {$order->total_paid_real} > 0. Exit", LOG_ERR);
       exit; // TODO: redirect: invalid cart/order
     }
 
     if($order->module != 'paybox') {
-      mylog("redir", "Existing order found: n°$id_order - $uniqid for cart {$cart->id}. But order not created using paybox. Exit", LOG_ERR);
+      $this->logger("Existing order found: n°$id_order - $uniqid for cart {$cart->id}. But order not created using paybox. Exit", LOG_ERR);
       exit; // TODO: redirect: invalid cart/order
     }
 
     if($order->current_state != Configuration::get('PAYBOX_OS_AUTHORIZATION_PENDING') &&
        $order->current_state != Configuration::get('PS_OS_ERROR')) {
-      mylog("redir", sprintf("Existing order found: n°$id_order - $uniqid for cart {$cart->id}. But order state = %d which is different from the expected PAYBOX_OS_AUTHORIZATION_PENDING/%d value. Exit",
+      $this->logger(sprintf("Existing order found: n°$id_order - $uniqid for cart {$cart->id}. But order state = %d which is different from the expected PAYBOX_OS_AUTHORIZATION_PENDING/%d value. Exit",
                              $order->current_state,
                              Configuration::get('PAYBOX_OS_AUTHORIZATION_PENDING')), LOG_ERR);
       exit; // TODO: redirect: invalid cart/order
     }
 
-    mylog("redir", "Existing order found: n°$id_order - $uniqid for cart {$cart->id}. total_paid_real = 0. Doing paybox redirect. Exit");
+    $this->logger("Existing order found: n°$id_order - $uniqid for cart {$cart->id}. total_paid_real = 0. Doing paybox redirect. Exit");
   }
 
   public function ensureValidConfiguration() {

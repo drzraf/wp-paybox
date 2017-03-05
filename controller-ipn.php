@@ -13,16 +13,42 @@
  */
 
 class WP_Paybox_IPN {
+
+  private $checkip;
+  private $pbx_retour;
+  private $pbx_ips;
+
+  public function __construct($checkip, $pbx_retour, $pbx_ips = NULL) {
+    $this->checkip = $checkip;
+    $this->pbx_retour = $pbx_retour;
+    $this->pbx_ip = $pbx_ips;
+  }
+
+  function default_logger($log, $syslog_prio = NULL, $source) {
+    static $fp;
+    syslog($syslog_prio ? : LOG_INFO, "paybox/{$source}: " . $log);
+    if(! $fp) $fp = fopen(__DIR__ . '/log.txt','a+');
+    fputs($fp, date("Y/m/d H:i:: ") . "{$source}: " . $log . PHP_EOL);
+  }
+
+  public function logger($args) {
+    if (is_callable([$this, 'custom_logger'])) {
+      $this->custom_logger(func_get_args() + ['IPN']);
+    }
+    else {
+      call_user_func_array([$this, 'default_logger'], func_get_args() + [1 => NULL, 2=>'IPN']);
+    }
+  }
+
   public function init() {
-    mylog("IPN", "start: " . $_SERVER['REMOTE_ADDR'] . ": " . $_SERVER['QUERY_STRING']);
+    $this->logger("start: " . $_SERVER['REMOTE_ADDR'] . ": " . $_SERVER['QUERY_STRING']);
 
-
-    if(WP_Paybox::opt('CHECKIP') && ! check_pbx_src_ip()) {
-      mylog("IPN", "...exit");
+    if($this->checkip && ! check_pbx_src_ip()) {
+      $this->logger("...exit");
       exit; // fake IP (or unknown Paybox IP)
     }
 
-    mylog("IPN", "processing request");
+    $this->logger("processing request");
 
     // recuperation des variables envoyées par Paybox
 
@@ -31,11 +57,11 @@ class WP_Paybox_IPN {
     $vars = $_GET;
 
     if(!isset($vars['pbx_sign']) OR !isset($vars['pbx_error'])) {
-      mylog("IPN", "Missing parameters: exit.");
+      $this->logger("Missing parameters: exit.");
       exit;
     }
     if(!isset($vars['pbx_auth'])) {
-      mylog("IPN", "Paybox transmited transaction refusal. exit.");
+      $this->logger("Paybox transmited transaction refusal. exit.");
       exit;
     }
 
@@ -51,7 +77,7 @@ class WP_Paybox_IPN {
         if(preg_match('/pbx_sign/', $e)) return NULL;
         return preg_replace('/:.*/', '', $e);
       },
-      WP_Paybox::PBX_RETOUR);
+      $this->pbx_retour);
 
     // doit préserver l'ordre des paramètres, tels qu'envoyés (et signés) par Paybox
     $pbx_signed_data = array_intersect_key($_GET, array_flip(array_filter($pbx_signed_fields)));
@@ -59,19 +85,19 @@ class WP_Paybox_IPN {
 
     // verification signature
     if(checksig($pbx_signed_data_string, $pbx_sign, __DIR__ . 'paybox.com.pem') !== 1) {
-      mylog("IPN", "exit.");
+      $this->logger("exit.");
       exit;
     }
 
     // TODO ?
     // XXX: ETAT_PBX fait partie des données signée ? si oui, alors rajouter à WP_Paybox::PBX_RETOUR
     if(isset($_GET['ETAT_PBX']) && $_GET['ETAT_PBX'] == 'PBX_RECONDUCTION_ABT') {
-      mylog("IPN", "Reconduction {$vars['ref']}. exit.");
+      $this->logger("Reconduction {$vars['ref']}. exit.");
       exit;
     }
 
     if(!isset($vars['ref'])) {
-      mylog("IPN", "No reference number: exit.", LOG_ERR);
+      $this->logger("No reference number: exit.", LOG_ERR);
       exit;
     }
 
@@ -79,15 +105,15 @@ class WP_Paybox_IPN {
     $p = get_posts($vars['ref']);
 
     if (class_implements($p)['Payboxable']) {
-      if ($p->handleIPN(mylog, $vars)) {
-        mylog("IPN", "handler success. exit");
+      if ($p->handleIPN($this->logger, $vars)) {
+        $this->logger("handler success. exit");
       } else {
-        mylog("IPN", "handler failure. exit");
+        $this->logger("handler failure. exit");
       }
     }
     else {
       // TODO: default handler ?
-      mylog("IPN", "no handler! exit");
+      $this->logger("no handler! exit");
     }
     exit;
   }
@@ -95,27 +121,27 @@ class WP_Paybox_IPN {
 // cf http://www1.paybox.com/espace-integrateur-documentation/la-solution-paybox-system/urls-dappels-et-adresses-ip/
   protected function check_pbx_src_ip() {
     // TODO: reverse-proxy should forbids this checks
-    if(in_array($_SERVER['REMOTE_ADDR'], WP_Paybox::SOURCE_IPS)) {
-      mylog("IPN", "Paybox source IP: authorized");
+    if(in_array($_SERVER['REMOTE_ADDR'], $this->pbx_ips)) {
+      $this->logger("Paybox source IP: authorized");
       return TRUE;
     }
-    mylog("IPN", "Paybox source IP {$_SERVER['REMOTE_ADDR']}: unauthorized", LOG_WARNING);
+    $this->logger("Paybox source IP {$_SERVER['REMOTE_ADDR']}: unauthorized", LOG_WARNING);
     return FALSE;
   }
 
   // verification signature Paybox
   private function checksig($data, $sig, $keyfile) {
-    mylog("IPN", "Paybox signature check for: $data");
+    $this->logger("Paybox signature check for: $data");
     $key = openssl_pkey_get_public(file_get_contents($keyfile));
     if(!$key) {
-      mylog("IPN", "Paybox signature check: can't load $keyfile", LOG_ERR);
+      $this->logger("Paybox signature check: can't load $keyfile", LOG_ERR);
       return -1;
     }
     $sig = base64_decode($sig);
     // verification : 1 si valide, 0 si invalide, -1 si erreur
     $ret = openssl_verify($data, $sig, $key);
     $ret_text = ($ret == -1 ? 'error' : $ret == 0 ? 'failure' : 'success');
-    mylog("IPN", "Paybox signature verification: {$ret_text} ($ret)", $ret != 1 ? LOG_ERR : NULL);
+    $this->logger("Paybox signature verification: {$ret_text} ($ret)", $ret != 1 ? LOG_ERR : NULL);
     return $ret;
   }
 }
