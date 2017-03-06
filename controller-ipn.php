@@ -41,6 +41,11 @@ class WP_Paybox_IPN {
   }
 
   public function init() {
+    if(! has_action('paybox_handle_IPN')) {
+      $this->logger("Paybox integration error: no registered custom handler for the IPN. exit");
+      exit; // fake IP (or unknown Paybox IP)
+    }
+
     $this->logger("start: " . $_SERVER['REMOTE_ADDR'] . ": " . $_SERVER['QUERY_STRING']);
 
     if($this->checkip && ! check_pbx_src_ip()) {
@@ -57,7 +62,7 @@ class WP_Paybox_IPN {
     $vars = $_GET;
 
     if(!isset($vars['pbx_sign']) OR !isset($vars['pbx_error'])) {
-      $this->logger("Missing parameters: exit.");
+      $this->logger("Missing parameters. exit");
       exit;
     }
     if(!isset($vars['pbx_auth'])) {
@@ -84,8 +89,8 @@ class WP_Paybox_IPN {
     $pbx_signed_data_string = http_build_query($pbx_signed_data);
 
     // verification signature
-    if(checksig($pbx_signed_data_string, $pbx_sign, __DIR__ . 'paybox.com.pem') !== 1) {
-      $this->logger("exit.");
+    if(FALSE && $this->checksig($pbx_signed_data_string, $pbx_sign, __DIR__ . '/paybox.com.pem') !== 1) {
+      $this->logger("Unverifiable signature. exit");
       exit;
     }
 
@@ -97,24 +102,18 @@ class WP_Paybox_IPN {
     }
 
     if(!isset($vars['ref'])) {
-      $this->logger("No reference number: exit.", LOG_ERR);
+      $this->logger("No reference number. exit", LOG_ERR);
       exit;
     }
 
     // load the class attached to this post_id and forward processing.
-    $p = get_posts($vars['ref']);
+    $p = get_post($vars['ref']);
+    if (! $p) {
+      $this->logger("Can't find post {$vars['ref']}. exit", LOG_ERR);
+    }
 
-    if (class_implements($p)['Payboxable']) {
-      if ($p->handleIPN($this->logger, $vars)) {
-        $this->logger("handler success. exit");
-      } else {
-        $this->logger("handler failure. exit");
-      }
-    }
-    else {
-      // TODO: default handler ?
-      $this->logger("no handler! exit");
-    }
+    do_action('paybox_handle_IPN', $p, $vars, [$this, 'logger']);
+    $this->logger("generic IPN handler terminate. finish");
     exit;
   }
 

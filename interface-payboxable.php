@@ -59,7 +59,7 @@ interface Payboxable {
   const MODE_PERSIST_AFTER_REDIRECT  = 2;
 
 
-	function handleIPN($logguer, $vars);
+	function handleIPN($obj, $vars, $logguer = NULL);
 
   function getUniqId();
   function getEmail();

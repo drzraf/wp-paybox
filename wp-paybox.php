@@ -6,7 +6,7 @@
  * Description: Accept Payment by credit card with Paybox
  * Author: Raphaël Droz <raphael.droz+floss@gmail.com>
  * Author URI: https://drzraf.me
- * Version: 0.1
+ * Version: 0.2
  * Text Domain: wp-paybox
  * Domain Path: /languages
  * GitHub Plugin URI: https://gitlab.com/drzraf/wp-paybox
@@ -32,7 +32,12 @@ require_once(__DIR__ . '/controller-redirect.php');
 
 load_plugin_textdomain( 'wp-paybox', false, __DIR__ );
 
-/*add_action( 'rest_api_init',
+
+// On IPN, the WP_Paybox_IPN will trigger the paybox_handle_IPN(), expecting
+// that the hook implementer can handle the final IPN work.
+// add_action('paybox_handle_IPN', ['WP_Paybox', 'handleIPN'], 10, 3);
+/*
+add_action( 'rest_api_init',
             function () {
               $ipn = new WP_Paybox_IPN(WP_Paybox::opt('CHECKIP'), WP_Paybox::PBX_RETOUR, WP_Paybox::SOURCE_IPS);
               register_rest_route('wp-paybox/v1' , '/ipn', ['methods' => 'GET', 'callback' => [$ipn, 'init']]);
